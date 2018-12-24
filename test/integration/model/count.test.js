@@ -2,8 +2,8 @@
 
 const chai = require('chai'),
   expect = chai.expect,
-  Support = require('../support'),
-  DataTypes = require('../../../lib/data-types');
+  Support = require(__dirname + '/../support'),
+  DataTypes = require(__dirname + '/../../../lib/data-types');
 
 describe(Support.getTestDialectTeaser('Model'), () => {
   beforeEach(function() {
@@ -18,16 +18,17 @@ describe(Support.getTestDialectTeaser('Model'), () => {
     this.User.hasMany(this.Project);
     this.Project.belongsTo(this.User);
 
-    return this.sequelize.sync({ force: true });
+    return this.sequelize.sync({force: true});
   });
 
   describe('count', () => {
     beforeEach(function() {
+      const self = this;
       return this.User.bulkCreate([
-        { username: 'boo' },
-        { username: 'boo2' }
+        {username: 'boo'},
+        {username: 'boo2'}
       ]).then(() => {
-        return this.User.findOne();
+        return self.User.findOne();
       }).then(user => {
         return user.createProject({
           name: 'project1'
@@ -74,9 +75,9 @@ describe(Support.getTestDialectTeaser('Model'), () => {
       return this.sequelize.sync({ force: true })
         .then(() =>
           this.User.bulkCreate([
-            { username: 'valak', age: 10 },
-            { username: 'conjuring', age: 20 },
-            { username: 'scary', age: 10 }
+            { username: 'valak', age: 10},
+            { username: 'conjuring', age: 20},
+            { username: 'scary', age: 10}
           ])
         )
         .then(() =>
@@ -108,9 +109,9 @@ describe(Support.getTestDialectTeaser('Model'), () => {
       return this.sequelize.sync({ force: true })
         .then(() =>
           this.User.bulkCreate([
-            { username: 'ember', age: 10 },
-            { username: 'angular', age: 20 },
-            { username: 'mithril', age: 10 }
+            { username: 'ember', age: 10},
+            { username: 'angular', age: 20},
+            { username: 'mithril', age: 10}
           ])
         )
         .then(() =>
@@ -150,9 +151,9 @@ describe(Support.getTestDialectTeaser('Model'), () => {
     it('should be able to specify column for COUNT() with includes', function() {
       return this.sequelize.sync({ force: true }).then(() =>
         this.User.bulkCreate([
-          { username: 'ember', age: 10 },
-          { username: 'angular', age: 20 },
-          { username: 'mithril', age: 10 }
+          { username: 'ember', age: 10},
+          { username: 'angular', age: 20},
+          { username: 'mithril', age: 10}
         ])
       ).then(() =>
         this.User.count({

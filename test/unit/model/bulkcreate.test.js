@@ -3,11 +3,10 @@
 const chai = require('chai'),
   expect = chai.expect,
   sinon = require('sinon'),
-  Support = require('../support'),
-  Sequelize = require('../../../index'),
-  Promise = Sequelize.Promise,
+  Support   = require(__dirname + '/../support'),
   DataTypes = require('../../../lib/data-types'),
-  current = Support.sequelize;
+  current   = Support.sequelize,
+  Promise = current.Promise;
 
 describe(Support.getTestDialectTeaser('Model'), () => {
   describe('bulkCreate', () => {
@@ -24,7 +23,7 @@ describe(Support.getTestDialectTeaser('Model'), () => {
     });
 
     afterEach(function() {
-      this.stub.resetHistory();
+      this.stub.reset();
     });
 
     after(function() {

@@ -2,7 +2,7 @@
 
 const chai = require('chai'),
   expect = chai.expect,
-  Support = require('../support'),
+  Support = require(__dirname + '/../support'),
   current = Support.sequelize,
   cls = require('continuation-local-storage'),
   sinon = require('sinon'),

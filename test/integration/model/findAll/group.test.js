@@ -2,9 +2,9 @@
 
 const chai = require('chai'),
   expect = chai.expect,
-  Support = require('../../support'),
+  Support = require(__dirname + '/../../support'),
   Sequelize = Support.Sequelize,
-  DataTypes = require('../../../../lib/data-types'),
+  DataTypes = require(__dirname + '/../../../../lib/data-types'),
   current = Support.sequelize;
 
 describe(Support.getTestDialectTeaser('Model'), () => {
@@ -32,11 +32,11 @@ describe(Support.getTestDialectTeaser('Model'), () => {
           ]);
         }).then(() => {
           return Comment.bulkCreate([
-            { text: 'Market', PostId: 1 },
-            { text: 'Text', PostId: 2 },
-            { text: 'Abc', PostId: 2 },
-            { text: 'Semaphor', PostId: 1 },
-            { text: 'Text', PostId: 1 }
+            { text: 'Market', PostId: 1},
+            { text: 'Text', PostId: 2},
+            { text: 'Abc', PostId: 2},
+            { text: 'Semaphor', PostId: 1},
+            { text: 'Text', PostId: 1}
           ]);
         }).then(() => {
           return Post.findAll({
@@ -44,10 +44,7 @@ describe(Support.getTestDialectTeaser('Model'), () => {
             include: [
               { model: Comment, attributes: [] }
             ],
-            group: ['Post.id'],
-            order: [
-              ['id']
-            ]
+            group: ['Post.id']
           });
         }).then(posts => {
           expect(parseInt(posts[0].get('comment_count'))).to.be.equal(3);
@@ -88,10 +85,7 @@ describe(Support.getTestDialectTeaser('Model'), () => {
             include: [
               { model: Post, attributes: [] }
             ],
-            group: ['PostId'],
-            order: [
-              ['PostId']
-            ]
+            group: ['PostId']
           });
         }).then(posts => {
           expect(posts[0].get().hasOwnProperty('id')).to.equal(false);

@@ -5,25 +5,16 @@ const sinon = require('sinon');
 const expect = chai.expect;
 const stub = sinon.stub;
 const _ = require('lodash');
-const Sequelize = require('../../../index');
-const Promise = Sequelize.Promise;
-const Support = require('../support');
-const DataTypes = require('../../../lib/data-types');
-const BelongsTo = require('../../../lib/associations/belongs-to');
-const HasMany = require('../../../lib/associations/has-many');
-const HasOne = require('../../../lib/associations/has-one');
+const Support = require(__dirname + '/../support');
+const DataTypes = require(__dirname + '/../../../lib/data-types');
+const BelongsTo = require(__dirname + '/../../../lib/associations/belongs-to');
+const HasMany = require(__dirname + '/../../../lib/associations/has-many');
+const HasOne = require(__dirname + '/../../../lib/associations/has-one');
 const current = Support.sequelize;
-const AssociationError = require('../../../lib/errors').AssociationError;
+const Promise = current.Promise;
+const AssociationError = require(__dirname + '/../../../lib/errors').AssociationError;
 
 describe(Support.getTestDialectTeaser('belongsToMany'), () => {
-  it('throws when invalid model is passed', () => {
-    const User = current.define('User');
-
-    expect(() => {
-      User.belongsToMany();
-    }).to.throw('User.belongsToMany called with something that\'s not a subclass of Sequelize.Model');
-  });
-
   it('should not inherit scopes from parent to join table', () => {
     const A = current.define('a'),
       B = current.define('b', {}, {
@@ -46,7 +37,7 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
     const AB = current.model('AB');
 
     expect(AB.options.defaultScope).to.deep.equal({});
-    expect(AB.options.scopes).to.deep.equal({});
+    expect(AB.options.scopes).to.have.length(0);
   });
 
   it('should not inherit validations from parent to join table', () => {
@@ -108,13 +99,13 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
       const errorFunction2 = User.belongsToMany.bind(User, Task, { through: undefined });
       const errorFunction3 = User.belongsToMany.bind(User, Task, { through: null });
       for (const errorFunction of [errorFunction1, errorFunction2, errorFunction3]) {
-        expect(errorFunction).to.throw(AssociationError, `${User.name}.belongsToMany(${Task.name}) requires through option, pass either a string or a model`);
+        expect(errorFunction).to.throw(AssociationError, 'belongsToMany must be given a through option, either a string or a model');
       }
     });
     it('throws an AssociationError for a self-association defined without an alias', () => {
       const User = current.define('User', {});
 
-      const errorFunction = User.belongsToMany.bind(User, User, { through: 'jointable' });
+      const errorFunction = User.belongsToMany.bind(User, User, {through: 'jointable'});
       expect(errorFunction).to.throw(AssociationError, '\'as\' must be defined for many-to-many self-associations');
     });
   });
@@ -183,7 +174,7 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
     });
 
     it('uses one insert into statement', function() {
-      return user.setTasks([task1, task2]).then(() => {
+      return user.setTasks([task1, task2]).bind(this).then(function() {
         expect(this.findAll).to.have.been.calledOnce;
         expect(this.bulkCreate).to.have.been.calledOnce;
       });
@@ -197,9 +188,9 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           { userId: 42, taskId: 16 }
         ]));
 
-      return user.setTasks([task1, task2]).then(() => {
+      return user.setTasks([task1, task2]).bind(this).then(() => {
         return user.setTasks(null);
-      }).then(() => {
+      }).then(function() {
         expect(this.findAll).to.have.been.calledTwice;
         expect(this.destroy).to.have.been.calledOnce;
       });
@@ -233,7 +224,7 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           type: DataTypes.INTEGER,
           autoIncrement: true
         }
-      }, { timestamps: false });
+      }, {timestamps: false});
 
       const Places = User.belongsToMany(Place, { through: UserPlace, foreignKey: 'user_id' });
       const Users = Place.belongsToMany(User, { through: UserPlace, foreignKey: 'place_id' });
@@ -270,8 +261,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           timestamps: false
         });
 
-      Product.Tags = Product.belongsToMany(Tag, { through: ProductTag, foreignKey: 'productId', otherKey: 'tagId' });
-      Tag.Products = Tag.belongsToMany(Product, { through: ProductTag, foreignKey: 'tagId', otherKey: 'productId' });
+      Product.Tags = Product.belongsToMany(Tag, {through: ProductTag, foreignKey: 'productId', otherKey: 'tagId'});
+      Tag.Products = Tag.belongsToMany(Product, {through: ProductTag, foreignKey: 'tagId', otherKey: 'productId'});
 
       expect(Product.Tags.toSource).to.be.an.instanceOf(BelongsTo);
       expect(Product.Tags.toTarget).to.be.an.instanceOf(BelongsTo);
@@ -307,8 +298,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           timestamps: false
         });
 
-      Product.Tags = Product.belongsToMany(Tag, { through: ProductTag, foreignKey: 'productId', otherKey: 'tagId' });
-      Tag.Products = Tag.belongsToMany(Product, { through: ProductTag, foreignKey: 'tagId', otherKey: 'productId' });
+      Product.Tags = Product.belongsToMany(Tag, {through: ProductTag, foreignKey: 'productId', otherKey: 'tagId'});
+      Tag.Products = Tag.belongsToMany(Product, {through: ProductTag, foreignKey: 'tagId', otherKey: 'productId'});
 
       expect(Product.Tags.manyFromSource).to.be.an.instanceOf(HasMany);
       expect(Product.Tags.manyFromTarget).to.be.an.instanceOf(HasMany);
@@ -344,8 +335,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           timestamps: false
         });
 
-      Product.Tags = Product.belongsToMany(Tag, { through: ProductTag, foreignKey: 'productId', otherKey: 'tagId' });
-      Tag.Products = Tag.belongsToMany(Product, { through: ProductTag, foreignKey: 'tagId', otherKey: 'productId' });
+      Product.Tags = Product.belongsToMany(Tag, {through: ProductTag, foreignKey: 'productId', otherKey: 'tagId'});
+      Tag.Products = Tag.belongsToMany(Product, {through: ProductTag, foreignKey: 'tagId', otherKey: 'productId'});
 
       expect(Product.Tags.oneFromSource).to.be.an.instanceOf(HasOne);
       expect(Product.Tags.oneFromTarget).to.be.an.instanceOf(HasOne);
@@ -381,8 +372,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           timestamps: false
         });
 
-      Product.Tags = Product.belongsToMany(Tag, { through: ProductTag, foreignKey: 'product_ID' });
-      Tag.Products = Tag.belongsToMany(Product, { through: ProductTag, foreignKey: 'tag_ID' });
+      Product.Tags = Product.belongsToMany(Tag, {through: ProductTag, foreignKey: 'product_ID'});
+      Tag.Products = Tag.belongsToMany(Product, {through: ProductTag, foreignKey: 'tag_ID'});
 
       expect(Product.Tags.toSource).to.be.ok;
       expect(Product.Tags.toTarget).to.be.ok;
@@ -418,8 +409,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           timestamps: false
         });
 
-      Product.Tags = Product.belongsToMany(Tag, { through: ProductTag, foreignKey: 'product_ID' });
-      Tag.Products = Tag.belongsToMany(Product, { through: ProductTag, foreignKey: 'tag_ID' });
+      Product.Tags = Product.belongsToMany(Tag, {through: ProductTag, foreignKey: 'product_ID'});
+      Tag.Products = Tag.belongsToMany(Product, {through: ProductTag, foreignKey: 'tag_ID'});
 
       expect(Product.Tags.oneFromSource).to.be.an.instanceOf(HasOne);
       expect(Product.Tags.oneFromTarget).to.be.an.instanceOf(HasOne);
@@ -455,8 +446,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
           timestamps: false
         });
 
-      Product.Tags = Product.belongsToMany(Tag, { through: ProductTag });
-      Tag.Products = Tag.belongsToMany(Product, { through: ProductTag });
+      Product.Tags = Product.belongsToMany(Tag, {through: ProductTag});
+      Tag.Products = Tag.belongsToMany(Product, {through: ProductTag});
 
       expect(Product.Tags.toSource).to.be.ok;
       expect(Product.Tags.toTarget).to.be.ok;
@@ -547,8 +538,8 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
       // Models taken from https://github.com/sequelize/sequelize/issues/3796
       const Service = current.define('service', {});
 
-      Service.belongsToMany(Service, { through: 'Supplements', as: 'supplements' });
-      Service.belongsToMany(Service, { through: 'Supplements', as: { singular: 'supplemented', plural: 'supplemented' } });
+      Service.belongsToMany(Service, {through: 'Supplements', as: 'supplements'});
+      Service.belongsToMany(Service, {through: 'Supplements', as: {singular: 'supplemented', plural: 'supplemented'}});
 
 
       expect(Service.prototype).to.have.ownProperty('getSupplements').to.be.a('function');
@@ -583,7 +574,7 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
     it('work properly when through is a model', function() {
       const User = this.sequelize.define('User', {}),
         Group = this.sequelize.define('Group', {}),
-        UserGroup = this.sequelize.define('GroupUser', {}, { tableName: 'user_groups' });
+        UserGroup = this.sequelize.define('GroupUser', {}, {tableName: 'user_groups'});
 
       User.belongsToMany(Group, { as: 'MyGroups', through: UserGroup, onUpdate: 'RESTRICT', onDelete: 'SET NULL' });
       Group.belongsToMany(User, { as: 'MyUsers', through: UserGroup, onUpdate: 'SET NULL', onDelete: 'RESTRICT' });
@@ -608,7 +599,7 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
               type: DataTypes.INTEGER(1)
             }
           },
-          { tableName: 'table_user_group_with_very_long_name' }
+          {tableName: 'table_user_group_with_very_long_name'}
         );
 
       User.belongsToMany(Group, { as: 'MyGroups', through: UserGroup, foreignKey: 'id_user_very_long_field' });
@@ -634,7 +625,7 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
               type: DataTypes.INTEGER(1)
             }
           },
-          { tableName: 'table_user_group_with_very_long_name' }
+          {tableName: 'table_user_group_with_very_long_name'}
         );
 
       User.belongsToMany(Group, {
@@ -655,65 +646,6 @@ describe(Support.getTestDialectTeaser('belongsToMany'), () => {
       expect(Group.associations.MyUsers.through.model.rawAttributes.id_group_very_long_field.unique).to.have.lengthOf(24);
       expect(Group.associations.MyUsers.through.model.rawAttributes.id_user_very_long_field.unique).to.equal('custom_user_group_unique');
       expect(Group.associations.MyUsers.through.model.rawAttributes.id_group_very_long_field.unique).to.equal('custom_user_group_unique');
-    });
-  });
-  describe('association hooks', () => {
-    beforeEach(function() {
-      this.Projects = this.sequelize.define('Project', { title: DataTypes.STRING });
-      this.Tasks = this.sequelize.define('Task', { title: DataTypes.STRING });
-    });
-    describe('beforeBelongsToManyAssociate', () => {
-      it('should trigger', function() {
-        const beforeAssociate = sinon.spy();
-        this.Projects.beforeAssociate(beforeAssociate);
-        this.Projects.belongsToMany(this.Tasks, { through: 'projects_and_tasks', hooks: true });
-
-        const beforeAssociateArgs = beforeAssociate.getCall(0).args;
-
-        expect(beforeAssociate).to.have.been.called;
-        expect(beforeAssociateArgs.length).to.equal(2);
-
-        const firstArg = beforeAssociateArgs[0];
-        expect(Object.keys(firstArg).join()).to.equal('source,target,type');
-        expect(firstArg.source).to.equal(this.Projects);
-        expect(firstArg.target).to.equal(this.Tasks);
-        expect(firstArg.type.name).to.equal('BelongsToMany');
-
-        expect(beforeAssociateArgs[1].sequelize.constructor.name).to.equal('Sequelize');
-      });
-      it('should not trigger association hooks', function() {
-        const beforeAssociate = sinon.spy();
-        this.Projects.beforeAssociate(beforeAssociate);
-        this.Projects.belongsToMany(this.Tasks, { through: 'projects_and_tasks', hooks: false });
-        expect(beforeAssociate).to.not.have.been.called;
-      });
-    });
-    describe('afterBelongsToManyAssociate', () => {
-      it('should trigger', function() {
-        const afterAssociate = sinon.spy();
-        this.Projects.afterAssociate(afterAssociate);
-        this.Projects.belongsToMany(this.Tasks, { through: 'projects_and_tasks', hooks: true });
-
-        const afterAssociateArgs = afterAssociate.getCall(0).args;
-
-        expect(afterAssociate).to.have.been.called;
-        expect(afterAssociateArgs.length).to.equal(2);
-
-        const firstArg = afterAssociateArgs[0];
-        expect(Object.keys(firstArg).join()).to.equal('source,target,type,association');
-        expect(firstArg.source).to.equal(this.Projects);
-        expect(firstArg.target).to.equal(this.Tasks);
-        expect(firstArg.type.name).to.equal('BelongsToMany');
-        expect(firstArg.association.constructor.name).to.equal('BelongsToMany');
-
-        expect(afterAssociateArgs[1].sequelize.constructor.name).to.equal('Sequelize');
-      });
-      it('should not trigger association hooks', function() {
-        const afterAssociate = sinon.spy();
-        this.Projects.afterAssociate(afterAssociate);
-        this.Projects.belongsToMany(this.Tasks, { through: 'projects_and_tasks', hooks: false });
-        expect(afterAssociate).to.not.have.been.called;
-      });
     });
   });
 });

@@ -2,11 +2,10 @@
 
 const chai = require('chai'),
   expect = chai.expect,
-  Sequelize = require('../../../index'),
-  Promise = Sequelize.Promise,
-  Support = require('../support'),
+  Support = require(__dirname + '/../support'),
   current = Support.sequelize,
   sinon = require('sinon'),
+  Promise = current.Promise,
   DataTypes = require('../../../lib/data-types'),
   _ = require('lodash');
 

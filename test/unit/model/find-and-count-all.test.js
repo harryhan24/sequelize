@@ -2,14 +2,14 @@
 
 const chai = require('chai'),
   expect = chai.expect,
-  Support = require('../support'),
+  Support = require(__dirname + '/../support'),
   current = Support.sequelize,
   sinon = require('sinon'),
-  DataTypes = require('../../../lib/data-types'),
+  DataTypes = require(__dirname + '/../../../lib/data-types'),
   Promise = require('bluebird').getNewLibraryCopy();
 
 describe(Support.getTestDialectTeaser('Model'), () => {
-  describe('findAndCountAll', () => {
+  describe('findAndCount', () => {
     describe('should handle promise rejection', () => {
       before(function() {
         this.stub = sinon.stub();
@@ -38,7 +38,7 @@ describe(Support.getTestDialectTeaser('Model'), () => {
       });
 
       it('with errors in count and findAll both', function() {
-        return this.User.findAndCountAll({})
+        return this.User.findAndCount({})
           .then(() => {
             throw new Error();
           })
